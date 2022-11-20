@@ -76,7 +76,21 @@ void ResumeStopWatch(void)
 
 void StopWatchTimeProcess(void)
 {
+	PORTD ^= (1<<7);
 
+	g_StopWatchValue.seconds++;
+	if(g_StopWatchValue.seconds == 60)
+	{
+		g_StopWatchValue.seconds = 0;
+		g_StopWatchValue.minutes++;
+		if(g_StopWatchValue.minutes == 60)
+		{
+			g_StopWatchValue.minutes = 0;
+			g_StopWatchValue.hours++;
+			if(g_StopWatchValue.hours == 99)
+				g_StopWatchValue.hours = 0;
+		}
+	}
 }
 
 void StopWatchSystemInit(void)
@@ -90,16 +104,19 @@ void StopWatchSystemInit(void)
 	INT2_setCallBack(ResumeStopWatch);
 	TIMER1_setCallBack(StopWatchTimeProcess);
 	TIMER1_CTC_init(&g_Timer1_configurations);
-	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+0,INPUT_PIN);
-	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+1,INPUT_PIN);
-	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+2,INPUT_PIN);
-	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+3,INPUT_PIN);
-	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+4,INPUT_PIN);
-	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+5,INPUT_PIN);
+	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+0,OUTPUT_PIN);
+	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+1,OUTPUT_PIN);
+	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+2,OUTPUT_PIN);
+	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+3,OUTPUT_PIN);
+	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+4,OUTPUT_PIN);
+	GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+5,OUTPUT_PIN);
 	GPIO_setupPinDirection(DECODER_PORT_ID,FIRST_DECODER_PIN_ID+0,OUTPUT_PIN);
 	GPIO_setupPinDirection(DECODER_PORT_ID,FIRST_DECODER_PIN_ID+1,OUTPUT_PIN);
 	GPIO_setupPinDirection(DECODER_PORT_ID,FIRST_DECODER_PIN_ID+2,OUTPUT_PIN);
 	GPIO_setupPinDirection(DECODER_PORT_ID,FIRST_DECODER_PIN_ID+3,OUTPUT_PIN);
+
+	GPIO_setupPinDirection(PORTD_ID,PIN7_ID,OUTPUT_PIN);
+	GPIO_writePin(PORTD_ID,PIN7_ID,HIGH_PIN);
 }
 
 /*===========================================================================================================
@@ -115,10 +132,34 @@ int main(void)
 	while(1)
 	{
 		/* Round and display on 7-segments */
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+0,HIGH_PIN);
+		GPIO_writePort(DECODER_PORT_ID,(g_StopWatchValue.seconds)%10);
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+0,LOW_PIN);
+		_delay_ms(DISPLAY_DELAY);
 
-		GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+0,OUTPUT_PIN);
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+1,HIGH_PIN);
+		GPIO_writePort(DECODER_PORT_ID,(g_StopWatchValue.seconds)/10);
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+1,LOW_PIN);
+		_delay_ms(DISPLAY_DELAY);
 
-		GPIO_setupPinDirection(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+0,OUTPUT_PIN);
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+2,HIGH_PIN);
+		GPIO_writePort(DECODER_PORT_ID,(g_StopWatchValue.minutes)%10);
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+2,LOW_PIN);
+		_delay_ms(DISPLAY_DELAY);
+
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+3,HIGH_PIN);
+		GPIO_writePort(DECODER_PORT_ID,(g_StopWatchValue.minutes)/10);
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+3,LOW_PIN);
+		_delay_ms(DISPLAY_DELAY);
+
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+4,HIGH_PIN);
+		GPIO_writePort(DECODER_PORT_ID,(g_StopWatchValue.hours)%10);
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+4,LOW_PIN);
+		_delay_ms(DISPLAY_DELAY);
+
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+5,HIGH_PIN);
+		GPIO_writePort(DECODER_PORT_ID,(g_StopWatchValue.hours)/10);
+		GPIO_writePin(SELECTION_PORT_ID,FIRST_SELECTION_PIN_ID+5,LOW_PIN);
 		_delay_ms(DISPLAY_DELAY);
 
 	}
